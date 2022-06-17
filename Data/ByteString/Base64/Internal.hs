@@ -116,17 +116,12 @@ data EncodeTable = ET !(ForeignPtr Word8) !(ForeignPtr Word16)
 -- corresponding table entry to the target address. The 16-bit blocks are
 -- stored in big-endian order, as the indices into the table are built in
 -- big-endian order.
-mkEncodeTable :: ByteString -> EncodeTable
+mkEncodeTable :: ByteString -> ByteString -> EncodeTable
 #if MIN_VERSION_bytestring(0,11,0)
-mkEncodeTable alphabet@(BS afp _) =
-    case table of BS fp _ -> ET afp (castForeignPtr fp)
+mkEncodeTable (BS afp _) (BS fp _) = ET afp (castForeignPtr fp)
 #else
-mkEncodeTable alphabet@(PS afp _ _) =
-    case table of PS fp _ _ -> ET afp (castForeignPtr fp)
+mkEncodeTable (PS afp _ _) (PS fp _ _) = ET afp (castForeignPtr fp)
 #endif
-  where
-    ix    = fromIntegral . B.index alphabet
-    table = B.pack $ concat $ [ [ix j, ix k] | j <- [0..63], k <- [0..63] ]
 
 -- | Decode a base64-encoded string.  This function strictly follows
 -- the specification in <https://datatracker.ietf.org/doc/html/rfc4648 RFC 4648>.
